@@ -41,8 +41,7 @@ export function advanceTurn(s, events, rng) {
     s.round++;
     startRound(s);
     skillsRoundStart(s, rng, events);
-    weatherRoundStart(s, rng, events);    // a new weather card for the round     // the topmost card of the track is discarded at the start of every round (from round 2), the track closes up and refills at once
     events.push({ type: 'round_started', round: s.round, rank: s.turn.rank, player: s.turn.player });
-    weatherRoundStart(s, rng, events);    // a new weather card for the round (after the round header in the log)
+    weatherRoundStart(s, rng, events);    // a new weather card for the round (after the round header in the log)     // the topmost card of the track is discarded at the start of every round (from round 2), the track closes up and refills at once
   }
 }
