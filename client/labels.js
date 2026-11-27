@@ -19,7 +19,7 @@ export const TNAME = { plain: 'Стандартный гекс', rock: 'Камн
 export const FACE = { hit: 'повреждение', crit_control: 'крит: управление', crit_armor: 'крит: броня', crit_cooling: 'крит: охлаждение' };
 export const CLS_RU = { light: 'Лёгкий', medium: 'Средний', heavy: 'Тяжёлый', assault: 'Штурмовой' };
 export const SYS_RU = { control: 'Система управления', armor: 'Броня', cooling: 'Охлаждение' };
-export const SYS_EFFECT = { control: '−1 куб пилотирования за уровень', armor: 'помеченные грани куба брони не работают', cooling: 'один жетон overheat не сбрасывается' };
+export const SYS_EFFECT = { control: '−1 куб пилотирования за уровень', armor: 'помеченные грани куба брони не работают', cooling: '−1 куб пилотирования; считается как жетон overheat при проверке перегрева' };
 export const SYS_IMG = { control: 'dmg_crit_control', armor: 'dmg_crit_armor', cooling: 'dmg_crit_cooling' };
 export const COOLER_RU = { standard: 'Standard', compact: 'Compact', double: 'Double' };
 export // ---- mines: placing (minelayer) and moving them; dice are picked automatically (selected dice first)

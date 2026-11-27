@@ -60,7 +60,7 @@ export function applyDamageFaces(s, rng, events, m, faces) {
       m.damage++;
     } else {
       const sys = face.slice(5); // control | armor | cooling
-      if (m.crits[sys] < 3) { m.crits[sys]++; if (sys === 'cooling') m.overheat = Math.min(RULES.maxOverheat, m.overheat + 1); }   // cooling crit: locked token, see heat.js
+      if (m.crits[sys] < 3) { m.crits[sys]++; }   // cooling crit: no overheat token; the counter itself counts in heat checks (see heat.js / engine.js)
       if (RULES.critAddsDamage && m.status === 'active') m.damage++;
       if (m.crits[sys] >= 3 && m.status === 'active') { m.status = 'disabled'; events.push({ type: 'disabled', mechId: m.id }); pilotFate(s, rng, events, m, 'reserve'); }
     }

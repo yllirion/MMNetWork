@@ -136,7 +136,7 @@ test('destroyed mech leaves a wreck (cover) and detonates into neighbours', () =
   assert.ok(killed.events.some((e) => e.type === 'detonation_hit' && e.targetId === 'b2'));
 });
 
-test('crits are only crits: no damage point; 3 identical crits disable (no explosion); cooling crit locks a token', () => {
+test('crits are only crits: no damage point; 3 identical crits disable (no explosion); cooling crit adds no token', () => {
   const s = duel();
   const m = s.mechs.b1;
   const faces = { crit_control: 'control', crit_armor: 'armor', crit_cooling: 'cooling' };
@@ -150,7 +150,7 @@ test('crits are only crits: no damage point; 3 identical crits disable (no explo
     seen.add(die);
     const mm = r.state.mechs.b1, sys = faces[die];
     assert.equal(mm.crits[sys], 1); assert.equal(mm.damage, 0);
-    if (sys === 'cooling') assert.equal(mm.overheat, 1);
+    if (sys === 'cooling') assert.equal(mm.overheat, 0);   // cooling crit no longer places an overheat token
   }
   assert.equal(seen.size, 3);
   // third identical crit → disabled, not destroyed
