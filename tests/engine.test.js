@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { apply, Game } from '../core/engine.js';
+import { RULES } from '../core/rules.js';
 import { neighbor } from '../core/hex.js';
 import { at, game, mech, playWith } from './helpers.js';
 
@@ -118,7 +119,7 @@ test('heat control: move heat, capacity, tokens, cooling', () => {
   assert.equal(r.state.mechs.a1.overheat, 1);
 });
 
-test('double coolers remove 2 tokens; cooling crit locks a token; water cools extra', () => {
+test('double coolers remove 2 tokens; cooling crit counts in overflow but not as a token; water cools extra', () => {
   const base = () => game([mech('a1', 1, 'medium', 5, 8, { coolers: 'double' }), mech('b1', 2, 'medium', 13, 8)],
     { map: { terrain: [{ col: 5, row: 8, type: 'water' }] } });
   let s = base(); s.mechs.a1.overheat = 4;
@@ -128,7 +129,22 @@ test('double coolers remove 2 tokens; cooling crit locks a token; water cools ex
   s = base(); s.mechs.a1.overheat = 1; s.mechs.a1.crits.cooling = 1;
   s = playWith(s, apply, 1, 'a1', []);
   r = apply(s, { type: 'END_ACTIVATION', player: 1 });
-  assert.equal(r.state.mechs.a1.overheat, 1);            // locked token stays
+  assert.equal(r.state.mechs.a1.overheat, 0);           // token is removed normally (no lock anymore)
+  // Overflow check with no cooling available: standard coolers remove 1, water removes another 1 → 6 tokens left.
+  const dry = () => game([mech('a1', 1, 'medium', 5, 8), mech('b1', 2, 'medium', 13, 8)]);
+  s = dry(); s.mechs.a1.crits.cooling = 1;
+  s = playWith(s, apply, 1, 'a1', []);
+  s.mechs.a1.overheat = RULES.maxOverheat;   // set after activation start so cooling doesn't remove tokens first
+  r = apply(s, { type: 'END_ACTIVATION', player: 1 });
+  let hc = r.events.find((e) => e.type === 'heat_control');
+  assert.equal(hc.overflow, 0);                           // 5 tokens + 1 crit = 6 → exactly at the limit
+  s = dry(); s.mechs.a1.crits.cooling = 2;
+  s = playWith(s, apply, 1, 'a1', []);
+  s.mechs.a1.overheat = RULES.maxOverheat;
+  r = apply(s, { type: 'END_ACTIVATION', player: 1 });
+  hc = r.events.find((e) => e.type === 'heat_control');
+  assert.equal(hc.overflow, 1);                           // 5 tokens + 2 crits = 7 > 6 → 1 unblockable die
+  assert.equal(r.state.mechs.a1.overheat, RULES.maxOverheat);
 });
 
 test('minor activity gives virtual evade; emergency shutdown does not', () => {

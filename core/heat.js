@@ -9,12 +9,11 @@ export const heatGenerated = (act) =>      // weather heat: heat storm +2, fog â
 
 // End-of-activation heat control: cool first, then generated heat vs capacity, then overflow damage.
 export function heatControl(s, rng, events, m, act) {
-  const locked = m.crits.cooling; // tokens that cannot be removed while the cooling crit stands
   const cool = (m.coolers === 'double' ? 2 : 1) + (act.shutdown ? 1 : 0);
   const before = m.overheat;
-  m.overheat = Math.max(locked, m.overheat - cool);
+  m.overheat = Math.max(0, m.overheat - cool);
   const extra = TERRAIN[getCell(s.map, m.pos).terrain].extraCool ?? 0;
-  m.overheat = Math.max(locked, m.overheat - extra);
+  m.overheat = Math.max(0, m.overheat - extra);
 
   const cooled = before - m.overheat;                // tokens actually removed (coolers, shutdown, water)
   const generated = heatGenerated(act);
@@ -22,8 +21,10 @@ export function heatControl(s, rng, events, m, act) {
   const tokensAdded = Math.max(0, generated - capacity);
   m.overheat += tokensAdded;
 
+  // Cooling crits don't place tokens, but they count as effective overheat in the overflow check.
   let overflow = 0;
-  if (m.overheat > RULES.maxOverheat) { overflow = m.overheat - RULES.maxOverheat; m.overheat = RULES.maxOverheat; }
+  const eff = m.overheat + m.crits.cooling;
+  if (eff > RULES.maxOverheat) { overflow = eff - RULES.maxOverheat; m.overheat = RULES.maxOverheat; }
   events.push({ type: 'heat_control', mechId: m.id, generated, capacity, tokensAdded, before, cooled, overheat: m.overheat, overflow });
   if (overflow > 0) {
     rollDamageDice(s, rng, events, m, overflow); // unblockable: no armor roll, no eject window
